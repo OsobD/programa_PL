@@ -1,0 +1,5 @@
+flask==2.3.3
+pulp==2.7.0
+numpy
+jinja2==3.1.2
+werkzeug==2.3.7
