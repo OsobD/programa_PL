@@ -1,0 +1,375 @@
+/* 
+   Color Palette
+   -------------
+   Gunmetal: #172424
+   Aureolin: #F8F32B
+   White: #FFFFFF
+   Black: #000000
+   Cool Gray: #8D99AE
+*/
+
+/* Transición inicial del tema - previene flash */
+html {
+  transition: none !important;
+}
+
+html.transition,
+html.transition *,
+html.transition *:before,
+html.transition *:after {
+  transition: all 0.3s ease !important;
+}
+
+:root {
+  --gunmetal: #172424;
+  --aureolin: #F8F32B;
+  --white: #FFFFFF;
+  --black: #000000;
+  --cool-gray: #8D99AE;
+  --light-gray: #f0f2f5;
+  --body-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  /* Themeable variables */
+  --bg-color: var(--light-gray);
+  --container-bg: var(--white);
+  --text-color: var(--gunmetal);
+  --heading-color: var(--gunmetal);
+  --form-bg: var(--light-gray);
+  --form-border: var(--light-gray);
+  --btn-bg: var(--gunmetal);
+  --btn-hover: var(--cool-gray);
+  --input-text: var(--gunmetal);
+  --input-bg: var(--white);
+  --accent-color: var(--aureolin);
+  --table-header-bg: var(--gunmetal);
+  --table-header-text: var(--white);
+  --table-row-odd: rgba(141, 153, 174, 0.1);
+  --table-row-hover: rgba(248, 243, 43, 0.1);
+  --input-group-bg: var(--gunmetal);
+  --input-group-text: var(--white);
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-color: #121212;
+  --container-bg: #1e1e1e;
+  --text-color: #e1e1e1;
+  --heading-color: #f8f8f8;
+  --form-bg: #2a2a2a;
+  --form-border: #333333;
+  --btn-bg: var(--cool-gray);
+  --btn-hover: var(--gunmetal);
+  --input-text: #e1e1e1;
+  --input-bg: #2a2a2a;
+  --accent-color: var(--aureolin);
+  --table-header-bg: var(--cool-gray);
+  --table-header-text: var(--white);
+  --table-row-odd: rgba(70, 70, 70, 0.5);
+  --table-row-hover: rgba(248, 243, 43, 0.2);
+  --input-group-bg: var(--cool-gray);
+  --input-group-text: var(--white);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+body {
+  font-family: var(--body-font);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  transition: background-color 0.3s ease;
+}
+
+.container {
+  max-width: 1000px;
+  padding: 2rem;
+  margin: 2rem auto;
+  background-color: var(--container-bg);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px var(--shadow-color);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--heading-color);
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+h1 {
+  position: relative;
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+h1:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background-color: var(--accent-color);
+  border-radius: 2px;
+  transition: background-color 0.3s ease;
+}
+
+/* Form Styling */
+.form-select, .form-control {
+  border: 2px solid var(--form-border);
+  border-radius: 6px;
+  padding: 10px 15px;
+  transition: all 0.3s ease;
+  background-color: var(--input-bg);
+  color: var(--input-text);
+}
+
+.form-select:focus, .form-control:focus {
+  border-color: var(--cool-gray);
+  box-shadow: 0 0 0 0.25rem rgba(141, 153, 174, 0.25);
+}
+
+label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  transition: color 0.3s ease;
+}
+
+.objetivo, .restriccion {
+  background-color: var(--form-bg);
+  border: none;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.objetivo:hover, .restriccion:hover {
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* Button Styling */
+.btn-primary {
+  background-color: var(--btn-bg);
+  border-color: var(--btn-bg);
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  color: var(--white);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--btn-hover);
+  border-color: var(--btn-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* Results Page Styling */
+.resultado-card {
+  background-color: var(--container-bg) !important;
+  border-left: 5px solid var(--accent-color);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.section {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--form-bg);
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.section h4 {
+  color: var(--heading-color);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.badge.bg-success {
+  background-color: #28a745 !important;
+}
+
+.badge.bg-warning {
+  background-color: #ffc107 !important;
+  color: var(--gunmetal);
+}
+
+/* Table Styling */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  padding: 12px 15px;
+  text-align: left;
+  transition: background-color 0.3s ease;
+}
+
+.table thead.bg-secondary {
+  background-color: #7a98b9 !important; /* Blue-gray color shown in the screenshot */
+}
+
+.table thead.bg-secondary th {
+  background-color: transparent;
+  font-weight: 500;
+}
+
+.table td {
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--form-border);
+  color: var(--text-color);
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--table-row-odd);
+  transition: background-color 0.3s ease;
+}
+
+.table-hover tbody tr:hover {
+  background-color: var(--table-row-hover);
+  transition: background-color 0.3s ease;
+}
+
+/* Input Group Styling */
+.input-group-text {
+  background-color: var(--input-group-bg);
+  color: var(--input-group-text);
+  border: none;
+  font-weight: 500;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767px) {
+  .container {
+    padding: 1rem;
+    margin: 1rem;
+  }
+  
+  .section {
+    padding: 0.8rem;
+  }
+}
+
+/* Theme Switch */
+.theme-switch-wrapper {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  z-index: 100;
+}
+
+/* From Uiverse.io by JustCode14 */ 
+/* Theme Switch */
+/* The switch - the box around the slider */
+.switch {
+  font-size: 17px;
+  position: relative;
+  display: inline-block;
+  width: 4em;
+  height: 2.2em;
+  border-radius: 30px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #2a2a2a;
+  transition: 0.4s;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 1.2em;
+  width: 1.2em;
+  border-radius: 20px;
+  left: 0.5em;
+  bottom: 0.5em;
+  transition: 0.4s;
+  transition-timing-function: cubic-bezier(0.81, -0.04, 0.38, 1.5);
+  box-shadow: inset 8px -4px 0px 0px #fff;
+}
+
+.switch input:checked + .slider {
+  background-color: #00a6ff;
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(1.8em);
+  box-shadow: inset 15px -4px 0px 15px #ffcf48;
+}
+
+.star {
+  background-color: #fff;
+  border-radius: 50%;
+  position: absolute;
+  width: 5px;
+  transition: all 0.4s;
+  height: 5px;
+}
+
+.star_1 {
+  left: 2.5em;
+  top: 0.5em;
+}
+
+.star_2 {
+  left: 2.2em;
+  top: 1.2em;
+}
+
+.star_3 {
+  left: 3em;
+  top: 0.9em;
+}
+
+.switch input:checked ~ .slider .star {
+  opacity: 0;
+}
+
+.cloud {
+  width: 3.5em;
+  position: absolute;
+  bottom: -1.4em;
+  left: -1.1em;
+  opacity: 0;
+  transition: all 0.4s;
+}
+
+.switch input:checked ~ .slider .cloud {
+  opacity: 1;
+}
