@@ -38,6 +38,29 @@
     <div class="container">
         <h1 class="text-center mb-4">Solución Lineal Directa</h1>
         
+        <div class="row mb-4 justify-content-center">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Método de solución</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="metodo_solucion" id="metodo_directo" value="directo" checked>
+                            <label class="form-check-label" for="metodo_directo">Solución Directa</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="metodo_solucion" id="metodo_simplex" value="simplex">
+                            <label class="form-check-label" for="metodo_simplex">Método Simplex Paso a Paso</label>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">El método Simplex paso a paso muestra todas las iteraciones y operaciones detalladas del algoritmo.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <form id="formPL" action="/resolver" method="post">
             <div class="row mb-4">
                 <div class="col-md-4">
@@ -124,6 +147,23 @@
             
             // Inicializar formulario
             actualizarFormulario();
+            
+            // Cambiar la acción del formulario según el método seleccionado
+            const metodoDireto = document.getElementById('metodo_directo');
+            const metodoSimplex = document.getElementById('metodo_simplex');
+            const formPL = document.getElementById('formPL');
+            
+            metodoDireto.addEventListener('change', function() {
+                if (this.checked) {
+                    formPL.action = '/resolver';
+                }
+            });
+            
+            metodoSimplex.addEventListener('change', function() {
+                if (this.checked) {
+                    formPL.action = '/simplex';
+                }
+            });
             
             function actualizarFormulario() {
                 const numVariables = parseInt(document.getElementById('num_variables').value);
