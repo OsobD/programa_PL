@@ -120,6 +120,81 @@
                 </div>
             </div>
             
+            {% if tiene_grafico and metodo_grafico and not metodo_grafico.error %}
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="resultado-card bg-light">
+                        <h3 class="mb-3">Método Gráfico</h3>
+                        
+                        <div class="text-center mb-4">
+                            <img src="data:image/png;base64,{{ metodo_grafico.imagen_base64 }}" 
+                                 class="img-fluid rounded" 
+                                 alt="Método Gráfico">
+                        </div>
+                        
+                        <div class="section">
+                            <h4>Puntos de Esquina</h4>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead class="bg-secondary text-white">
+                                        <tr>
+                                            <th>Punto</th>
+                                            <th>x₁</th>
+                                            <th>x₂</th>
+                                            <th>Valor F.O.</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for i in range(metodo_grafico.puntos_esquina|length) %}
+                                            {% set punto = metodo_grafico.puntos_esquina[i] %}
+                                            <tr {% if metodo_grafico.punto_optimo and punto.x|round(4) == metodo_grafico.punto_optimo.x|round(4) and punto.y|round(4) == metodo_grafico.punto_optimo.y|round(4) %}class="table-success fw-bold"{% endif %}>
+                                                <td>P{{ i+1 }}</td>
+                                                <td>{{ punto.x|round(4) }}</td>
+                                                <td>{{ punto.y|round(4) }}</td>
+                                                <td>{{ punto.valor|round(4) }}</td>
+                                                <td>
+                                                    {% if metodo_grafico.punto_optimo and punto.x|round(4) == metodo_grafico.punto_optimo.x|round(4) and punto.y|round(4) == metodo_grafico.punto_optimo.y|round(4) %}
+                                                        <span class="badge bg-success">Óptimo</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">No óptimo</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="section">
+                            <h4>Solución Óptima</h4>
+                            {% if metodo_grafico.punto_optimo %}
+                                <p class="fs-5">
+                                    El punto óptimo es ({{ metodo_grafico.punto_optimo.x|round(4) }}, {{ metodo_grafico.punto_optimo.y|round(4) }})
+                                    con valor óptimo {{ metodo_grafico.valor_optimo|round(4) }}
+                                </p>
+                                <p class="fs-5">
+                                    Función objetivo: {{ datos.coef_objetivo[0] }}x₁ + {{ datos.coef_objetivo[1] }}x₂
+                                </p>
+                            {% else %}
+                                <p class="fs-5 text-danger">No se encontró solución óptima mediante el método gráfico.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% elif tiene_grafico and metodo_grafico and metodo_grafico.error %}
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="alert alert-warning">
+                        <h4>Error en el método gráfico</h4>
+                        <p>{{ metodo_grafico.error }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
             <div class="text-center mt-4 mb-5">
                 <a href="/" class="btn btn-primary btn-lg">Volver al formulario</a>
             </div>

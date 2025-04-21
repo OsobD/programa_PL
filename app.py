@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from models.lineal import resolver_modelo_lineal
+from models.grafico import generar_metodo_grafico
 import json
 
 app = Flask(__name__)
@@ -22,7 +23,12 @@ def resolver():
         # Obtener coeficientes de la función objetivo
         coef_objetivo = []
         for i in range(1, num_variables + 1):
-            coef = float(data.get(f'obj_coef_{i}', 0))
+            # Asegurarse de que los coeficientes se convierten correctamente a float
+            coef_str = data.get(f'obj_coef_{i}', '0')
+            try:
+                coef = float(coef_str)
+            except ValueError:
+                coef = 0.0
             coef_objetivo.append(coef)
         
         # Obtener coeficientes de las restricciones
@@ -54,15 +60,24 @@ def resolver():
         # Resolver el modelo
         resultados = resolver_modelo_lineal(datos_modelo)
         
+        # Si el problema tiene 2 variables, generar el método gráfico
+        metodo_grafico = None
+        if num_variables == 2:
+            metodo_grafico = generar_metodo_grafico(datos_modelo)
+        
         # Renderizar la página de resultados
         return render_template('results.html', 
                               resultados=resultados, 
-                              datos=datos_modelo)
+                              datos=datos_modelo,
+                              metodo_grafico=metodo_grafico,
+                              tiene_grafico=(num_variables == 2))
     
     except Exception as e:
         return render_template('results.html', 
                               resultados={'error': str(e)}, 
-                              datos={})
+                              datos={},
+                              metodo_grafico=None,
+                              tiene_grafico=False)
 
 if __name__ == '__main__':
     app.run(debug=True)
