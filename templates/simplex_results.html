@@ -13,7 +13,7 @@
             color: var(--gunmetal);
             font-weight: bold;
         }
-        .tabla-simplex {
+        .Tabla-simplex {
             overflow-x: auto;
             margin-bottom: 1.5rem;
         }
@@ -67,6 +67,24 @@
         [data-theme="dark"] .highlighted {
             background-color: rgba(255, 193, 7, 0.3);
             color: #fff;
+        }
+        /* Estilos para el elemento pivote */
+        td.highlighted {
+            background-color: #ffc107 !important;
+            color: #000 !important;
+            font-weight: bold;
+            box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+        [data-theme="dark"] td.highlighted {
+            background-color: #ffc107 !important;
+            color: #000 !important;
+        }
+        /* Estilo para resaltar la fila con el cociente mínimo */
+        .list-group-item-success {
+            background-color: rgba(40, 167, 69, 0.2);
+            border-left: 4px solid #28a745;
         }
     </style>
 </head>
@@ -172,233 +190,342 @@
             <div class="section">
                 <h4>Desarrollo paso a paso</h4>
                 
-                <!-- Paso 0: Tableau inicial -->
-                {% set initial_paso = resultados.pasos[0] %}
-                {% set nombres_columnas = initial_paso.nombres_columnas %}
-                {% set nombres_filas = initial_paso.nombres_filas %}
-                
-                <div class="paso">
-                    <div class="paso-header">
-                        <div class="paso-numero">0</div>
-                        <h5 class="paso-title">Tableau inicial</h5>
-                    </div>
-                    
-                    <div class="tabla-simplex">
-                        <table class="table table-bordered table-hover">
-                            <thead class="bg-secondary text-white">
-                                <tr>
-                                    <th></th>
-                                    {% for col in nombres_columnas %}
-                                        <th>{{ col }}</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for i in range(initial_paso.tableau_numerico.shape[0] if resultados.metodo == "gran_m" else initial_paso.tableau.shape[0]) %}
-                                    <tr>
-                                        <td><strong>{{ nombres_filas[i] }}</strong></td>
-                                        {% if resultados.metodo == "gran_m" %}
-                                            {% for j in range(initial_paso.tableau_numerico.shape[1]) %}
-                                                <td>
-                                                    {% if initial_paso.tableau_M[i][j] != 0 %}
-                                                        {% if initial_paso.tableau_numerico[i][j] != 0 %}
-                                                            {{ initial_paso.tableau_numerico[i][j]|round(4) }} + 
-                                                        {% endif %}
-                                                        {% if initial_paso.tableau_M[i][j] == 1 %}
-                                                            <span class="valor-m">M</span>
-                                                        {% elif initial_paso.tableau_M[i][j] == -1 %}
-                                                            <span class="valor-m">-M</span>
-                                                        {% else %}
-                                                            <span class="valor-m">{{ initial_paso.tableau_M[i][j]|round(0) }}M</span>
-                                                        {% endif %}
-                                                    {% else %}
-                                                        {{ initial_paso.tableau_numerico[i][j]|round(4) }}
-                                                    {% endif %}
-                                                </td>
-                                            {% endfor %}
-                                        {% else %}
-                                            {% for j in range(initial_paso.tableau.shape[1]) %}
-                                                <td>{{ initial_paso.tableau[i][j]|round(4) }}</td>
-                                            {% endfor %}
-                                        {% endif %}
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- Pasos del método -->
-                {% set current_paso = 1 %}
-                {% set paso_count = 1 %}
-                
-                {% for paso in resultados.pasos[1:] %}
-                    <!-- Cuando cambia el número de iteración, mostrar un divisor -->
-                    {% if paso.paso != current_paso and paso.descripcion != "Ajuste de fila objetivo para variables artificiales" %}
-                        <div class="step-divider"></div>
-                        {% set current_paso = paso.paso %}
-                    {% endif %}
+                <!-- Paso 0: Tabla inicial -->
+                {% if resultados.pasos and resultados.pasos|length > 0 %}
+                    {% set initial_paso = resultados.pasos[0] %}
+                    {% set nombres_columnas = initial_paso.nombres_columnas %}
+                    {% set nombres_filas = initial_paso.nombres_filas %}
                     
                     <div class="paso">
-                        <!-- Si es un paso de selección de pivote -->
-                        {% if paso.descripcion == "Selección de pivote" %}
-                            <div class="paso-header">
-                                <div class="paso-numero">{{ paso_count }}</div>
-                                <h5 class="paso-title">Iteración {{ paso.paso }} - Selección de pivote</h5>
-                            </div>
-                            {% set paso_count = paso_count + 1 %}
-                            
-                            <div class="alert alert-info">
-                                <p><i class="fas fa-search"></i> <strong>Variable de entrada:</strong> {{ paso.columna_pivote_nombre }} (columna {{ paso.columna_pivote }}) - Tiene el coeficiente más negativo en la fila objetivo.</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <h6>Cálculo de cocientes para determinar la variable de salida:</h6>
-                                <ul class="list-group">
-                                    {% for i in range(1, paso.cocientes|length + 1) %}
-                                        <li class="list-group-item {% if i == paso.fila_pivote %}list-group-item-success{% endif %}">
-                                            {% set fila_nombre = resultados.pasos[0].nombres_filas[i] %}
-                                            <span class="badge bg-secondary me-2">{{ fila_nombre }}</span>
-                                            {% if resultados.metodo == "gran_m" %}
-                                                {% if paso.tableau_numerico[i][paso.columna_pivote] <= 0 %}
-                                                    Cociente indeterminado (divisor ≤ 0)
-                                                {% else %}
-                                                    Cociente = {{ paso.tableau_numerico[i][-1]|round(4) }} / {{ paso.tableau_numerico[i][paso.columna_pivote]|round(4) }} = {{ paso.tableau_numerico[i][-1] / paso.tableau_numerico[i][paso.columna_pivote]|round(4) }}
-                                                    {% if i == paso.fila_pivote %}
-                                                        <span class="badge bg-success ms-2">Mínimo</span>
-                                                    {% endif %}
-                                                {% endif %}
-                                            {% else %}
-                                                {% if paso.tableau[i][paso.columna_pivote] <= 0 %}
-                                                    Cociente indeterminado (divisor ≤ 0)
-                                                {% else %}
-                                                    Cociente = {{ paso.tableau[i][-1]|round(4) }} / {{ paso.tableau[i][paso.columna_pivote]|round(4) }} = {{ paso.tableau[i][-1] / paso.tableau[i][paso.columna_pivote]|round(4) }}
-                                                    {% if i == paso.fila_pivote %}
-                                                        <span class="badge bg-success ms-2">Mínimo</span>
-                                                    {% endif %}
-                                                {% endif %}
-                                            {% endif %}
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            
-                            <div class="alert alert-success">
-                                <p><i class="fas fa-exchange-alt"></i> <strong>Elemento pivote:</strong> Ubicado en fila {{ paso.fila_pivote }} ({{ paso.fila_pivote_nombre }}), columna {{ paso.columna_pivote }} ({{ paso.columna_pivote_nombre }}). Valor: {{ paso.valor_pivote|round(4) }}</p>
-                            </div>
-                            
-                        <!-- Si es un paso de normalización o operación -->
-                        {% else %}
-                            <div class="paso-header">
-                                <div class="paso-numero">{{ paso_count }}</div>
-                                <h5 class="paso-title">
-                                    {% if paso.descripcion == "Ajuste de fila objetivo para variables artificiales" %}
-                                        Ajuste de fila objetivo para variables artificiales
-                                    {% elif paso.descripcion == "Normalización de la fila pivote" %}
-                                        Iteración {{ paso.paso }} - Normalización de fila pivote
-                                    {% else %}
-                                        Iteración {{ paso.paso }} - Operación de fila
-                                    {% endif %}
-                                </h5>
-                            </div>
-                            {% set paso_count = paso_count + 1 %}
-                            
-                            <div class="mb-3">
-                                <span class="operacion-fila">{{ paso.operacion }}</span>
-                            </div>
-                            
-                            <div class="tabla-simplex">
-                                <table class="table table-bordered table-hover">
-                                    <thead class="bg-secondary text-white">
-                                        <tr>
-                                            <th></th>
-                                            {% for col in paso.nombres_columnas %}
-                                                <th>{{ col }}</th>
-                                            {% endfor %}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% if resultados.metodo == "gran_m" %}
-                                            {% for i in range(paso.tableau_numerico.shape[0]) %}
-                                                <tr class="{% if paso.descripcion == 'Normalización de la fila pivote' and i == paso.fila_pivote %}highlighted{% endif %}">
-                                                    <td><strong>{{ paso.nombres_filas[i] }}</strong></td>
-                                                    {% for j in range(paso.tableau_numerico.shape[1]) %}
-                                                        <td>
-                                                            {% if paso.tableau_M[i][j] != 0 %}
-                                                                {% if paso.tableau_numerico[i][j] != 0 %}
-                                                                    {{ paso.tableau_numerico[i][j]|round(4) }} + 
-                                                                {% endif %}
-                                                                {% if paso.tableau_M[i][j] == 1 %}
-                                                                    <span class="valor-m">M</span>
-                                                                {% elif paso.tableau_M[i][j] == -1 %}
-                                                                    <span class="valor-m">-M</span>
-                                                                {% else %}
-                                                                    <span class="valor-m">{{ paso.tableau_M[i][j]|round(0) }}M</span>
-                                                                {% endif %}
-                                                            {% else %}
-                                                                {{ paso.tableau_numerico[i][j]|round(4) }}
+                        <div class="paso-header">
+                            <div class="paso-numero">0</div>
+                            <h5 class="paso-title">Tabla inicial</h5>
+                        </div>
+                        
+                        <div class="Tabla-simplex">
+                            <table class="table table-bordered table-hover">
+                                <thead class="bg-secondary text-white">
+                                    <tr>
+                                        <th></th>
+                                        {% for col in nombres_columnas %}
+                                            <th>{{ col }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if resultados.metodo == "gran_m" and initial_paso.Tabla_numerico is defined and initial_paso.Tabla_M is defined %}
+                                        {% for i in range(initial_paso.Tabla_numerico.shape[0]) %}
+                                            <tr>
+                                                <td><strong>{{ nombres_filas[i] }}</strong></td>
+                                                {% for j in range(initial_paso.Tabla_numerico.shape[1]) %}
+                                                    <td>
+                                                        {% if initial_paso.Tabla_M[i][j] != 0 %}
+                                                            {% if initial_paso.Tabla_numerico[i][j] != 0 %}
+                                                                {{ initial_paso.Tabla_numerico[i][j]|round(4) }} + 
                                                             {% endif %}
-                                                        </td>
-                                                    {% endfor %}
-                                                </tr>
+                                                            {% if initial_paso.Tabla_M[i][j] == 1 %}
+                                                                <span class="valor-m">M</span>
+                                                            {% elif initial_paso.Tabla_M[i][j] == -1 %}
+                                                                <span class="valor-m">-M</span>
+                                                            {% else %}
+                                                                <span class="valor-m">{{ initial_paso.Tabla_M[i][j]|round(0) }}M</span>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            {{ initial_paso.Tabla_numerico[i][j]|round(4) }}
+                                                        {% endif %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    {% elif initial_paso.Tabla is defined %}
+                                        {% for i in range(initial_paso.Tabla.shape[0]) %}
+                                            <tr>
+                                                <td><strong>{{ nombres_filas[i] }}</strong></td>
+                                                {% for j in range(initial_paso.Tabla.shape[1]) %}
+                                                    <td>{{ initial_paso.Tabla[i][j]|round(4) }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="{{ nombres_columnas|length + 1 }}" class="text-center">
+                                                <div class="alert alert-warning">
+                                                    No se puede mostrar el Tabla inicial por un problema en los datos.
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Pasos del método -->
+                    {% set current_paso = 1 %}
+                    {% set paso_count = 1 %}
+                    
+                    {% for paso in resultados.pasos[1:] %}
+                        <!-- Cuando cambia el número de iteración, mostrar un divisor -->
+                        {% if paso.paso != current_paso and paso.descripcion != "Ajuste de fila objetivo para variables artificiales" %}
+                            <div class="step-divider"></div>
+                            {% set current_paso = paso.paso %}
+                        {% endif %}
+                        
+                        <div class="paso">
+                            <!-- Si es un paso de selección de pivote -->
+                            {% if paso.descripcion == "Selección de pivote" %}
+                                <div class="paso-header">
+                                    <div class="paso-numero">{{ paso_count }}</div>
+                                    <h5 class="paso-title">Iteración {{ paso.paso }} - Selección de pivote</h5>
+                                </div>
+                                {% set paso_count = paso_count + 1 %}
+                                
+                                <div class="alert alert-info">
+                                    <p><i class="fas fa-search"></i> <strong>Variable de entrada:</strong> {{ paso.columna_pivote_nombre }} (columna {{ paso.columna_pivote }}) - Tiene el coeficiente más negativo en la fila objetivo.</p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h6>Cálculo de cocientes para determinar la variable de salida:</h6>
+                                    <ul class="list-group">
+                                        {% if paso.cocientes is defined %}
+                                            {% for i in range(1, paso.cocientes|length + 1) %}
+                                                <li class="list-group-item {% if i == paso.fila_pivote %}list-group-item-success{% endif %}">
+                                                    {% set fila_nombre = nombres_filas[i] %}
+                                                    <span class="badge bg-secondary me-2">{{ fila_nombre }}</span>
+                                                    {% if resultados.metodo == "gran_m" and paso.Tabla_numerico is defined %}
+                                                        {% if paso.Tabla_numerico[i][paso.columna_pivote] <= 0 %}
+                                                            Cociente indeterminado (divisor ≤ 0) - No se considera para selección
+                                                        {% else %}
+                                                            Cociente = {{ paso.Tabla_numerico[i][-1]|round(4) }} / {{ paso.Tabla_numerico[i][paso.columna_pivote]|round(4) }} = {{ paso.Tabla_numerico[i][-1] / paso.Tabla_numerico[i][paso.columna_pivote]|round(4) }}
+                                                            {% if i == paso.fila_pivote %}
+                                                                <span class="badge bg-success ms-2">Mínimo</span>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% elif paso.Tabla is defined %}
+                                                        {% if paso.Tabla[i][paso.columna_pivote] <= 0 %}
+                                                            Cociente indeterminado (divisor ≤ 0) - No se considera para selección
+                                                        {% else %}
+                                                            Cociente = {{ paso.Tabla[i][-1]|round(4) }} / {{ paso.Tabla[i][paso.columna_pivote]|round(4) }} = {{ paso.Tabla[i][-1] / paso.Tabla[i][paso.columna_pivote]|round(4) }}
+                                                            {% if i == paso.fila_pivote %}
+                                                                <span class="badge bg-success ms-2">Mínimo</span>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% if paso.cocientes[i-1] is defined %}
+                                                            {% if paso.cocientes[i-1] == None or paso.cocientes[i-1] < 0 %}
+                                                                Cociente indeterminado (divisor ≤ 0 o negativo) - No se considera para selección
+                                                            {% else %}
+                                                                Cociente = {{ paso.cocientes[i-1]|round(4) }}
+                                                                {% if i == paso.fila_pivote %}
+                                                                    <span class="badge bg-success ms-2">Mínimo</span>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        {% else %}
+                                                            Cociente no disponible - Revise los datos del elemento pivote
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </li>
                                             {% endfor %}
                                         {% else %}
-                                            {% for i in range(paso.tableau.shape[0]) %}
-                                                <tr class="{% if paso.descripcion == 'Normalización de la fila pivote' and i == paso.fila_pivote %}highlighted{% endif %}">
-                                                    <td><strong>{{ paso.nombres_filas[i] }}</strong></td>
-                                                    {% for j in range(paso.tableau.shape[1]) %}
-                                                        <td>{{ paso.tableau[i][j]|round(4) }}</td>
+                                            <li class="list-group-item">
+                                                <div class="alert alert-warning mb-0">
+                                                    No se pueden mostrar los cocientes. Se utilizan criterios internos para la selección del pivote.
+                                                </div>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                
+                                <div class="alert alert-success">
+                                    <p><i class="fas fa-exchange-alt"></i> <strong>Elemento pivote:</strong> Ubicado en fila {{ paso.fila_pivote }} ({{ paso.fila_pivote_nombre }}), columna {{ paso.columna_pivote }} ({{ paso.columna_pivote_nombre }}). Valor: {{ paso.valor_pivote|round(4) }}</p>
+                                </div>
+                                
+                                {% if paso.Tabla is defined or (resultados.metodo == "gran_m" and paso.Tabla_numerico is defined) %}
+                                <div class="mb-4">
+                                    <h6>Tabla actual:</h6>
+                                    <div class="Tabla-simplex">
+                                        <table class="table table-bordered table-hover">
+                                            <thead class="bg-secondary text-white">
+                                                <tr>
+                                                    <th></th>
+                                                    {% for col in paso.nombres_columnas %}
+                                                        <th>{{ col }}</th>
                                                     {% endfor %}
                                                 </tr>
-                                            {% endfor %}
+                                            </thead>
+                                            <tbody>
+                                                {% if resultados.metodo == "gran_m" and paso.Tabla_numerico is defined and paso.Tabla_M is defined %}
+                                                    {% for i in range(paso.Tabla_numerico.shape[0]) %}
+                                                        <tr class="{% if i == paso.fila_pivote %}highlighted{% endif %}">
+                                                            <td><strong>{{ paso.nombres_filas[i] }}</strong></td>
+                                                            {% for j in range(paso.Tabla_numerico.shape[1]) %}
+                                                                <td class="{% if j == paso.columna_pivote and i == paso.fila_pivote %}highlighted{% endif %}">
+                                                                    {% if paso.Tabla_M[i][j] != 0 %}
+                                                                        {% if paso.Tabla_numerico[i][j] != 0 %}
+                                                                            {{ paso.Tabla_numerico[i][j]|round(4) }} + 
+                                                                        {% endif %}
+                                                                        {% if paso.Tabla_M[i][j] == 1 %}
+                                                                            <span class="valor-m">M</span>
+                                                                        {% elif paso.Tabla_M[i][j] == -1 %}
+                                                                            <span class="valor-m">-M</span>
+                                                                        {% else %}
+                                                                            <span class="valor-m">{{ paso.Tabla_M[i][j]|round(0) }}M</span>
+                                                                        {% endif %}
+                                                                    {% else %}
+                                                                        {{ paso.Tabla_numerico[i][j]|round(4) }}
+                                                                    {% endif %}
+                                                                </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% elif paso.Tabla is defined %}
+                                                    {% for i in range(paso.Tabla.shape[0]) %}
+                                                        <tr class="{% if i == paso.fila_pivote %}highlighted{% endif %}">
+                                                            <td><strong>{{ paso.nombres_filas[i] }}</strong></td>
+                                                            {% for j in range(paso.Tabla.shape[1]) %}
+                                                                <td class="{% if j == paso.columna_pivote and i == paso.fila_pivote %}highlighted{% endif %}">
+                                                                    {{ paso.Tabla[i][j]|round(4) }}
+                                                                </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            <!-- Si es un paso de normalización o operación -->
+                            {% else %}
+                                <div class="paso-header">
+                                    <div class="paso-numero">{{ paso_count }}</div>
+                                    <h5 class="paso-title">
+                                        {% if paso.descripcion == "Ajuste de fila objetivo para variables artificiales" %}
+                                            Ajuste de fila objetivo para variables artificiales
+                                        {% elif paso.descripcion == "Normalización de la fila pivote" %}
+                                            Iteración {{ paso.paso }} - Normalización de fila pivote
+                                        {% else %}
+                                            Iteración {{ paso.paso }} - Operación de fila
                                         {% endif %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% endif %}
+                                    </h5>
+                                </div>
+                                {% set paso_count = paso_count + 1 %}
+                                
+                                <div class="mb-3">
+                                    <span class="operacion-fila">{{ paso.operacion }}</span>
+                                </div>
+                                
+                                <div class="Tabla-simplex">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="bg-secondary text-white">
+                                            <tr>
+                                                <th></th>
+                                                {% for col in paso.nombres_columnas %}
+                                                    <th>{{ col }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if resultados.metodo == "gran_m" and paso.Tabla_numerico is defined and paso.Tabla_M is defined %}
+                                                {% for i in range(paso.Tabla_numerico.shape[0]) %}
+                                                    <tr class="{% if paso.descripcion == 'Normalización de la fila pivote' and i == paso.fila_pivote %}highlighted{% endif %}">
+                                                        <td><strong>{{ paso.nombres_filas[i] }}</strong></td>
+                                                        {% for j in range(paso.Tabla_numerico.shape[1]) %}
+                                                            <td>
+                                                                {% if paso.Tabla_M[i][j] != 0 %}
+                                                                    {% if paso.Tabla_numerico[i][j] != 0 %}
+                                                                        {{ paso.Tabla_numerico[i][j]|round(4) }} + 
+                                                                    {% endif %}
+                                                                    {% if paso.Tabla_M[i][j] == 1 %}
+                                                                        <span class="valor-m">M</span>
+                                                                    {% elif paso.Tabla_M[i][j] == -1 %}
+                                                                        <span class="valor-m">-M</span>
+                                                                    {% else %}
+                                                                        <span class="valor-m">{{ paso.Tabla_M[i][j]|round(0) }}M</span>
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    {{ paso.Tabla_numerico[i][j]|round(4) }}
+                                                                {% endif %}
+                                                            </td>
+                                                        {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            {% elif paso.Tabla is defined %}
+                                                {% for i in range(paso.Tabla.shape[0]) %}
+                                                    <tr class="{% if paso.descripcion == 'Normalización de la fila pivote' and i == paso.fila_pivote %}highlighted{% endif %}">
+                                                        <td><strong>{{ paso.nombres_filas[i] }}</strong></td>
+                                                        {% for j in range(paso.Tabla.shape[1]) %}
+                                                            <td>{{ paso.Tabla[i][j]|round(4) }}</td>
+                                                        {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="{{ paso.nombres_columnas|length + 1 }}" class="text-center">
+                                                        <div class="alert alert-warning">
+                                                            No se puede mostrar el Tabla para este paso por un problema en los datos.
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-warning">
+                        No hay pasos disponibles para mostrar.
                     </div>
-                {% endfor %}
+                {% endif %}
             </div>
             
             <!-- Resultado final -->
             <div class="section">
                 <h4>Resultado final</h4>
                 
-                <div class="alert alert-{% if resultados.resultado_final.status_text == 'Óptimo' %}success{% else %}warning{% endif %} mb-4">
-                    <i class="fas {% if resultados.resultado_final.status_text == 'Óptimo' %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %}"></i>
-                    <strong>Estado de la solución:</strong> {{ resultados.resultado_final.status_text }}
-                </div>
-                
-                {% if resultados.resultado_final.valor_objetivo is not none %}
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card mb-4">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="card-title mb-0">Valor óptimo</h5>
+                {% if resultados.resultado_final is defined %}
+                    <div class="alert alert-{% if resultados.resultado_final.status_text == 'Óptimo' %}success{% else %}warning{% endif %} mb-4">
+                        <i class="fas {% if resultados.resultado_final.status_text == 'Óptimo' %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %}"></i>
+                        <strong>Estado de la solución:</strong> {{ resultados.resultado_final.status_text }}
+                    </div>
+                    
+                    {% if resultados.resultado_final.valor_objetivo is not none %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-4">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="card-title mb-0">Valor óptimo</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h3 class="text-center">Z = {{ resultados.resultado_final.valor_objetivo|round(4) }}</h3>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <h3 class="text-center">Z = {{ resultados.resultado_final.valor_objetivo|round(4) }}</h3>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card mb-4">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="card-title mb-0">Variables</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group">
+                                            {% for var in resultados.resultado_final.variables %}
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    {{ var.nombre }}
+                                                    <span class="badge bg-primary rounded-pill">{{ var.valor|round(4) }}</span>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="col-md-6">
-                            <div class="card mb-4">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="card-title mb-0">Variables</h5>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="list-group">
-                                        {% for var in resultados.resultado_final.variables %}
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                {{ var.nombre }}
-                                                <span class="badge bg-primary rounded-pill">{{ var.valor|round(4) }}</span>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-warning">
+                        No se han encontrado resultados finales.
                     </div>
                 {% endif %}
             </div>

@@ -16,7 +16,7 @@ def resolver_simplex_paso_a_paso(datos):
     
     Returns:
         Diccionario con los resultados y pasos del método Simplex:
-            - pasos: Lista de pasos con las tablas intermedias
+            - pasos: Lista de pasos con las Tablas intermedias
             - resultado_final: Resultado final del problema
             - metodo: "simplex" o "gran_m" según el método utilizado
     """
@@ -47,41 +47,41 @@ def metodo_simplex_estandar(datos):
     # Número de variables de holgura (una por cada restricción <=)
     num_vars_holgura = num_rest
     
-    # Crear la matriz inicial del tableau
+    # Crear la matriz inicial del Tabla
     # Columnas: Z, X1...Xn, S1...Sm, Sol
     num_cols = 1 + num_vars + num_vars_holgura + 1
     num_filas = 1 + num_rest  # Fila objetivo + filas de restricciones
     
-    tableau = np.zeros((num_filas, num_cols))
+    Tabla = np.zeros((num_filas, num_cols))
     
     # Llenar la fila objetivo (fila 0)
-    tableau[0, 0] = 1  # Coeficiente de Z
+    Tabla[0, 0] = 1  # Coeficiente de Z
     for j in range(num_vars):
-        tableau[0, j+1] = -coef_obj[j]  # Coeficientes de X con signo negativo
+        Tabla[0, j+1] = -coef_obj[j]  # Coeficientes de X con signo negativo
     
     # Llenar las filas de restricciones
     for i in range(num_rest):
         # Coeficientes de las variables originales
         for j in range(num_vars):
-            tableau[i+1, j+1] = coef_rest[i][j]
+            Tabla[i+1, j+1] = coef_rest[i][j]
         
         # Variable de holgura (1 en la posición correspondiente)
-        tableau[i+1, num_vars+i+1] = 1
+        Tabla[i+1, num_vars+i+1] = 1
         
         # Lado derecho
-        tableau[i+1, -1] = lados_derechos[i]
+        Tabla[i+1, -1] = lados_derechos[i]
     
     # Lista para almacenar cada paso
     pasos = []
     
-    # Añadir tableau inicial
+    # Añadir Tabla inicial
     nombres_columnas = ["Z"] + [f"X{j+1}" for j in range(num_vars)] + [f"S{j+1}" for j in range(num_vars_holgura)] + ["Sol"]
     nombres_filas = ["f1"] + [f"f{i+2}" for i in range(num_rest)]
     
     pasos.append({
         "paso": 0,
-        "descripcion": "Tableau inicial",
-        "tableau": tableau.copy(),
+        "descripcion": "Tabla inicial",
+        "Tabla": Tabla.copy(),
         "nombres_columnas": nombres_columnas,
         "nombres_filas": nombres_filas
     })
@@ -94,21 +94,21 @@ def metodo_simplex_estandar(datos):
         # Verificar si ya se alcanzó la solución óptima 
         # Para maximización: todos los coeficientes deben ser >= 0
         # Para minimización: como invertimos los signos, la condición es la misma
-        if all(tableau[0, 1:num_vars+num_vars_holgura+1] >= 0):
+        if all(Tabla[0, 1:num_vars+num_vars_holgura+1] >= 0):
             break
         
         # Encontrar la columna pivote:
         # Para maximización: el valor más negativo en la fila objetivo
         # Para minimización: como invertimos los signos, la lógica es la misma
-        col_pivote = np.argmin(tableau[0, 1:num_vars+num_vars_holgura+1]) + 1
+        col_pivote = np.argmin(Tabla[0, 1:num_vars+num_vars_holgura+1]) + 1
         
         # Calcular los cocientes para identificar la fila pivote
         cocientes = []
         for i in range(1, num_filas):
-            if tableau[i, col_pivote] <= 0:
+            if Tabla[i, col_pivote] <= 0:
                 cocientes.append(float('inf'))
             else:
-                cocientes.append(tableau[i, -1] / tableau[i, col_pivote])
+                cocientes.append(Tabla[i, -1] / Tabla[i, col_pivote])
         
         if all(c == float('inf') for c in cocientes):
             return {
@@ -132,20 +132,20 @@ def metodo_simplex_estandar(datos):
             "columna_pivote_nombre": nombres_columnas[col_pivote],
             "fila_pivote": fila_pivote,
             "fila_pivote_nombre": nombres_filas[fila_pivote-1],
-            "valor_pivote": tableau[fila_pivote, col_pivote],
+            "valor_pivote": Tabla[fila_pivote, col_pivote],
             "cocientes": cocientes
         })
         
         # Normalizar la fila pivote
-        valor_pivote = tableau[fila_pivote, col_pivote]
-        tableau[fila_pivote] = tableau[fila_pivote] / valor_pivote
+        valor_pivote = Tabla[fila_pivote, col_pivote]
+        Tabla[fila_pivote] = Tabla[fila_pivote] / valor_pivote
         
         # Registrar la normalización
         pasos.append({
             "paso": iteracion,
             "descripcion": f"Normalización de la fila pivote",
             "operacion": f"{nombres_filas[fila_pivote-1]} = {nombres_filas[fila_pivote-1]} / {valor_pivote:.4f}",
-            "tableau": tableau.copy(),
+            "Tabla": Tabla.copy(),
             "nombres_columnas": nombres_columnas,
             "nombres_filas": nombres_filas
         })
@@ -153,8 +153,8 @@ def metodo_simplex_estandar(datos):
         # Hacer ceros en la columna pivote
         for i in range(num_filas):
             if i != fila_pivote:
-                factor = tableau[i, col_pivote]
-                tableau[i] = tableau[i] - factor * tableau[fila_pivote]
+                factor = Tabla[i, col_pivote]
+                Tabla[i] = Tabla[i] - factor * Tabla[fila_pivote]
                 
                 # Registrar cada operación de fila
                 if abs(factor) > 1e-10:  # Solo registrar si el factor no es prácticamente cero
@@ -162,7 +162,7 @@ def metodo_simplex_estandar(datos):
                         "paso": iteracion,
                         "descripcion": "Operación de fila",
                         "operacion": f"{nombres_filas[i]} = {nombres_filas[i]} - {factor:.4f} * {nombres_filas[fila_pivote-1]}",
-                        "tableau": tableau.copy(),
+                        "Tabla": Tabla.copy(),
                         "nombres_columnas": nombres_columnas,
                         "nombres_filas": nombres_filas
                     })
@@ -175,12 +175,12 @@ def metodo_simplex_estandar(datos):
     valores_basicos = []
     
     for j in range(1, num_vars + num_vars_holgura + 1):
-        col = tableau[:, j]
+        col = Tabla[:, j]
         if (col == 1).sum() == 1 and (col == 0).sum() == num_filas - 1:
             # Es una variable básica
             fila = np.where(col == 1)[0][0]
             variables_basicas.append(j)
-            valores_basicos.append(tableau[fila, -1])
+            valores_basicos.append(Tabla[fila, -1])
         else:
             variables_basicas.append(j)
             valores_basicos.append(0)
@@ -188,13 +188,13 @@ def metodo_simplex_estandar(datos):
     # Preparar el resultado final
     resultado = {
         "status_text": "Óptimo" if iteracion <= max_iteraciones else "Número máximo de iteraciones alcanzado",
-        "valor_objetivo": tableau[0, -1] if not es_minimizacion else -tableau[0, -1],
+        "valor_objetivo": Tabla[0, -1] if not es_minimizacion else -Tabla[0, -1],
         "variables": []
     }
     
     # Extraer los valores de las variables originales
     for j in range(num_vars):
-        idx = j + 1  # Índice en el tableau
+        idx = j + 1  # Índice en el Tabla
         valor = 0
         
         if idx in variables_basicas:
@@ -261,19 +261,19 @@ def metodo_gran_m(datos):
             vars_adicionales.append([('a', idx_artificial)])
             idx_artificial += 1
     
-    # Crear la matriz inicial del tableau
+    # Crear la matriz inicial del Tabla
     # Columnas: Z, X1...Xn, S1...Sm, R1...Rk, Sol
     num_cols = 1 + num_vars + num_vars_holgura + num_vars_artificiales + 1
     num_filas = 1 + num_rest  # Fila objetivo + filas de restricciones
     
     # Crearemos dos matrices: una para los coeficientes numéricos y otra para los coeficientes simbólicos M
-    tableau_numerico = np.zeros((num_filas, num_cols))
-    tableau_M = np.zeros((num_filas, num_cols))  # Para coeficientes de M
+    Tabla_numerico = np.zeros((num_filas, num_cols))
+    Tabla_M = np.zeros((num_filas, num_cols))  # Para coeficientes de M
     
     # Llenar la fila objetivo (fila 0)
-    tableau_numerico[0, 0] = 1  # Coeficiente de Z
+    Tabla_numerico[0, 0] = 1  # Coeficiente de Z
     for j in range(num_vars):
-        tableau_numerico[0, j+1] = -coef_obj[j]  # Coeficientes de X con signo negativo
+        Tabla_numerico[0, j+1] = -coef_obj[j]  # Coeficientes de X con signo negativo
     
     # Añadir coeficientes M para variables artificiales
     for i, vars_lista in enumerate(vars_adicionales):
@@ -281,26 +281,26 @@ def metodo_gran_m(datos):
             if tipo == 'a':  # Variable artificial
                 # Para maximización y minimización (como ya invertimos la FO), siempre restamos M
                 col_idx = 1 + num_vars + num_vars_holgura + idx
-                tableau_M[0, col_idx] = -1  # -M
+                Tabla_M[0, col_idx] = -1  # -M
     
     # Llenar las filas de restricciones
     for i in range(num_rest):
         # Coeficientes de las variables originales
         for j in range(num_vars):
-            tableau_numerico[i+1, j+1] = coef_rest[i][j]
+            Tabla_numerico[i+1, j+1] = coef_rest[i][j]
         
         # Variables adicionales
         for tipo, idx in vars_adicionales[i]:
             if tipo == 'h':  # Variable de holgura
                 col_idx = 1 + num_vars + idx
                 # Si es <=, se suma; si es >=, se resta
-                tableau_numerico[i+1, col_idx] = 1 if operadores[i] == "<=" else -1
+                Tabla_numerico[i+1, col_idx] = 1 if operadores[i] == "<=" else -1
             else:  # Variable artificial
                 col_idx = 1 + num_vars + num_vars_holgura + idx
-                tableau_numerico[i+1, col_idx] = 1
+                Tabla_numerico[i+1, col_idx] = 1
         
         # Lado derecho
-        tableau_numerico[i+1, -1] = lados_derechos[i]
+        Tabla_numerico[i+1, -1] = lados_derechos[i]
     
     # Crear nombres para las columnas y filas
     nombres_columnas = ["Z"] + [f"X{j+1}" for j in range(num_vars)]
@@ -314,32 +314,32 @@ def metodo_gran_m(datos):
     pasos = []
     
     # Combinar los coeficientes numéricos con los simbólicos M para mostrar
-    tableau_combinado = {}
+    Tabla_combinado = {}
     for i in range(num_filas):
         for j in range(num_cols):
-            if i not in tableau_combinado:
-                tableau_combinado[i] = {}
+            if i not in Tabla_combinado:
+                Tabla_combinado[i] = {}
             
-            if tableau_M[i][j] != 0:
-                tableau_combinado[i][j] = {
-                    "numerico": tableau_numerico[i][j],
-                    "simbolico": tableau_M[i][j],
+            if Tabla_M[i][j] != 0:
+                Tabla_combinado[i][j] = {
+                    "numerico": Tabla_numerico[i][j],
+                    "simbolico": Tabla_M[i][j],
                     "tiene_M": True
                 }
             else:
-                tableau_combinado[i][j] = {
-                    "numerico": tableau_numerico[i][j],
+                Tabla_combinado[i][j] = {
+                    "numerico": Tabla_numerico[i][j],
                     "simbolico": 0,
                     "tiene_M": False
                 }
     
-    # Añadir tableau inicial
+    # Añadir Tabla inicial
     pasos.append({
         "paso": 0,
-        "descripcion": "Tableau inicial",
-        "tableau_numerico": tableau_numerico.copy(),
-        "tableau_M": tableau_M.copy(),
-        "tableau_combinado": tableau_combinado.copy(),
+        "descripcion": "Tabla inicial",
+        "Tabla_numerico": Tabla_numerico.copy(),
+        "Tabla_M": Tabla_M.copy(),
+        "Tabla_combinado": Tabla_combinado.copy(),
         "nombres_columnas": nombres_columnas,
         "nombres_filas": nombres_filas
     })
@@ -351,32 +351,32 @@ def metodo_gran_m(datos):
             for tipo, idx in vars_adicionales[i]:
                 if tipo == 'a':  # Es una variable artificial
                     col_idx = 1 + num_vars + num_vars_holgura + idx
-                    if tableau_M[0, col_idx] != 0:  # Si tiene coeficiente M
+                    if Tabla_M[0, col_idx] != 0:  # Si tiene coeficiente M
                         # Multiplicar la fila de restricción por el coeficiente de M y restar de la F.O.
-                        m_coef = tableau_M[0, col_idx]  # Coeficiente de M (normalmente -1)
+                        m_coef = Tabla_M[0, col_idx]  # Coeficiente de M (normalmente -1)
                         
                         # Actualizar coeficientes numéricos
-                        tableau_numerico[0] = tableau_numerico[0] - m_coef * tableau_numerico[i+1]
+                        Tabla_numerico[0] = Tabla_numerico[0] - m_coef * Tabla_numerico[i+1]
                         
                         # Actualizar coeficientes simbólicos M
-                        tableau_M[0] = tableau_M[0] - m_coef * tableau_M[i+1]
+                        Tabla_M[0] = Tabla_M[0] - m_coef * Tabla_M[i+1]
                         
-                        # Actualizar tableau combinado
+                        # Actualizar Tabla combinado
                         nuevo_combinado = {}
                         for ii in range(num_filas):
                             for jj in range(num_cols):
                                 if ii not in nuevo_combinado:
                                     nuevo_combinado[ii] = {}
                                 
-                                if tableau_M[ii][jj] != 0:
+                                if Tabla_M[ii][jj] != 0:
                                     nuevo_combinado[ii][jj] = {
-                                        "numerico": tableau_numerico[ii][jj],
-                                        "simbolico": tableau_M[ii][jj],
+                                        "numerico": Tabla_numerico[ii][jj],
+                                        "simbolico": Tabla_M[ii][jj],
                                         "tiene_M": True
                                     }
                                 else:
                                     nuevo_combinado[ii][jj] = {
-                                        "numerico": tableau_numerico[ii][jj],
+                                        "numerico": Tabla_numerico[ii][jj],
                                         "simbolico": 0,
                                         "tiene_M": False
                                     }
@@ -386,9 +386,9 @@ def metodo_gran_m(datos):
                             "paso": 0,
                             "descripcion": "Ajuste de fila objetivo para variables artificiales",
                             "operacion": f"{nombres_filas[0]} = {nombres_filas[0]} - {m_coef:.0f}M * {nombres_filas[i+1]}",
-                            "tableau_numerico": tableau_numerico.copy(),
-                            "tableau_M": tableau_M.copy(),
-                            "tableau_combinado": nuevo_combinado,
+                            "Tabla_numerico": Tabla_numerico.copy(),
+                            "Tabla_M": Tabla_M.copy(),
+                            "Tabla_combinado": nuevo_combinado,
                             "nombres_columnas": nombres_columnas,
                             "nombres_filas": nombres_filas
                         })
@@ -400,11 +400,11 @@ def metodo_gran_m(datos):
     while iteracion <= max_iteraciones:
         # Verificar si ya se alcanzó la solución óptima
         # Para el criterio de optimalidad, primero verificamos los coeficientes con M
-        hay_negativos_M = any(tableau_M[0, j] < 0 for j in range(1, num_cols-1))
+        hay_negativos_M = any(Tabla_M[0, j] < 0 for j in range(1, num_cols-1))
         
         # Si no hay coeficientes M negativos, verificamos los numéricos
         if not hay_negativos_M:
-            if all(tableau_numerico[0, j] >= 0 for j in range(1, num_cols-1)):
+            if all(Tabla_numerico[0, j] >= 0 for j in range(1, num_cols-1)):
                 break
         
         # Encontrar la columna pivote
@@ -414,13 +414,13 @@ def metodo_gran_m(datos):
         
         for j in range(1, num_cols-1):
             # Si el coeficiente M es negativo, es mayor prioridad
-            if tableau_M[0, j] < 0:
-                if tableau_M[0, j] < valor_minimo:
-                    valor_minimo = tableau_M[0, j]
+            if Tabla_M[0, j] < 0:
+                if Tabla_M[0, j] < valor_minimo:
+                    valor_minimo = Tabla_M[0, j]
                     col_pivote = j
             # Si no hay M negativos o están empatados, usamos los numéricos
-            elif tableau_M[0, j] == 0 and tableau_numerico[0, j] < 0:
-                if col_pivote == 0 or tableau_numerico[0, j] < tableau_numerico[0, col_pivote]:
+            elif Tabla_M[0, j] == 0 and Tabla_numerico[0, j] < 0:
+                if col_pivote == 0 or Tabla_numerico[0, j] < Tabla_numerico[0, col_pivote]:
                     col_pivote = j
         
         # Si no se encontró columna pivote, verificar si es por error numérico
@@ -430,10 +430,10 @@ def metodo_gran_m(datos):
         # Calcular los cocientes para identificar la fila pivote
         cocientes = []
         for i in range(1, num_filas):
-            if tableau_numerico[i, col_pivote] <= 0:
+            if Tabla_numerico[i, col_pivote] <= 0:
                 cocientes.append(float('inf'))
             else:
-                cocientes.append(tableau_numerico[i, -1] / tableau_numerico[i, col_pivote])
+                cocientes.append(Tabla_numerico[i, -1] / Tabla_numerico[i, col_pivote])
         
         if all(c == float('inf') for c in cocientes):
             return {
@@ -450,7 +450,7 @@ def metodo_gran_m(datos):
         fila_pivote = cocientes.index(min(cocientes)) + 1
         
         # Valor pivote (siempre es numérico, no tiene M)
-        valor_pivote = tableau_numerico[fila_pivote, col_pivote]
+        valor_pivote = Tabla_numerico[fila_pivote, col_pivote]
         
         # Registrar la selección de pivote
         pasos.append({
@@ -462,32 +462,32 @@ def metodo_gran_m(datos):
             "fila_pivote_nombre": nombres_filas[fila_pivote-1],
             "valor_pivote": valor_pivote,
             "cocientes": cocientes,
-            "tableau_numerico": tableau_numerico.copy(),
-            "tableau_M": tableau_M.copy(),
+            "Tabla_numerico": Tabla_numerico.copy(),
+            "Tabla_M": Tabla_M.copy(),
             "nombres_columnas": nombres_columnas,
             "nombres_filas": nombres_filas
         })
         
         # Normalizar la fila pivote
-        tableau_numerico[fila_pivote] = tableau_numerico[fila_pivote] / valor_pivote
-        tableau_M[fila_pivote] = tableau_M[fila_pivote] / valor_pivote
+        Tabla_numerico[fila_pivote] = Tabla_numerico[fila_pivote] / valor_pivote
+        Tabla_M[fila_pivote] = Tabla_M[fila_pivote] / valor_pivote
         
-        # Actualizar tableau combinado
+        # Actualizar Tabla combinado
         nuevo_combinado = {}
         for i in range(num_filas):
             for j in range(num_cols):
                 if i not in nuevo_combinado:
                     nuevo_combinado[i] = {}
                 
-                if tableau_M[i][j] != 0:
+                if Tabla_M[i][j] != 0:
                     nuevo_combinado[i][j] = {
-                        "numerico": tableau_numerico[i][j],
-                        "simbolico": tableau_M[i][j],
+                        "numerico": Tabla_numerico[i][j],
+                        "simbolico": Tabla_M[i][j],
                         "tiene_M": True
                     }
                 else:
                     nuevo_combinado[i][j] = {
-                        "numerico": tableau_numerico[i][j],
+                        "numerico": Tabla_numerico[i][j],
                         "simbolico": 0,
                         "tiene_M": False
                     }
@@ -497,9 +497,9 @@ def metodo_gran_m(datos):
             "paso": iteracion,
             "descripcion": f"Normalización de la fila pivote",
             "operacion": f"{nombres_filas[fila_pivote-1]} = {nombres_filas[fila_pivote-1]} / {valor_pivote:.4f}",
-            "tableau_numerico": tableau_numerico.copy(),
-            "tableau_M": tableau_M.copy(),
-            "tableau_combinado": nuevo_combinado,
+            "Tabla_numerico": Tabla_numerico.copy(),
+            "Tabla_M": Tabla_M.copy(),
+            "Tabla_combinado": nuevo_combinado,
             "nombres_columnas": nombres_columnas,
             "nombres_filas": nombres_filas
         })
@@ -508,31 +508,31 @@ def metodo_gran_m(datos):
         for i in range(num_filas):
             if i != fila_pivote:
                 # Factor numérico
-                factor_numerico = tableau_numerico[i, col_pivote]
+                factor_numerico = Tabla_numerico[i, col_pivote]
                 # Factor para términos con M
-                factor_M = tableau_M[i, col_pivote]
+                factor_M = Tabla_M[i, col_pivote]
                 
                 # Ajustar coeficientes numéricos
-                tableau_numerico[i] = tableau_numerico[i] - factor_numerico * tableau_numerico[fila_pivote]
+                Tabla_numerico[i] = Tabla_numerico[i] - factor_numerico * Tabla_numerico[fila_pivote]
                 # Ajustar coeficientes con M
-                tableau_M[i] = tableau_M[i] - factor_M * tableau_M[fila_pivote] - factor_numerico * tableau_M[fila_pivote]
+                Tabla_M[i] = Tabla_M[i] - factor_M * Tabla_M[fila_pivote] - factor_numerico * Tabla_M[fila_pivote]
                 
-                # Actualizar tableau combinado
+                # Actualizar Tabla combinado
                 nuevo_combinado = {}
                 for ii in range(num_filas):
                     for jj in range(num_cols):
                         if ii not in nuevo_combinado:
                             nuevo_combinado[ii] = {}
                         
-                        if tableau_M[ii][jj] != 0:
+                        if Tabla_M[ii][jj] != 0:
                             nuevo_combinado[ii][jj] = {
-                                "numerico": tableau_numerico[ii][jj],
-                                "simbolico": tableau_M[ii][jj],
+                                "numerico": Tabla_numerico[ii][jj],
+                                "simbolico": Tabla_M[ii][jj],
                                 "tiene_M": True
                             }
                         else:
                             nuevo_combinado[ii][jj] = {
-                                "numerico": tableau_numerico[ii][jj],
+                                "numerico": Tabla_numerico[ii][jj],
                                 "simbolico": 0,
                                 "tiene_M": False
                             }
@@ -554,9 +554,9 @@ def metodo_gran_m(datos):
                         "paso": iteracion,
                         "descripcion": "Operación de fila",
                         "operacion": operacion,
-                        "tableau_numerico": tableau_numerico.copy(),
-                        "tableau_M": tableau_M.copy(),
-                        "tableau_combinado": nuevo_combinado,
+                        "Tabla_numerico": Tabla_numerico.copy(),
+                        "Tabla_M": Tabla_M.copy(),
+                        "Tabla_combinado": nuevo_combinado,
                         "nombres_columnas": nombres_columnas,
                         "nombres_filas": nombres_filas
                     })
@@ -565,12 +565,12 @@ def metodo_gran_m(datos):
     
     # Verificar si hay variables artificiales en la base
     for j in range(1 + num_vars + num_vars_holgura, 1 + num_vars + num_vars_holgura + num_vars_artificiales):
-        col_num = tableau_numerico[:, j]
-        col_M = tableau_M[:, j]
+        col_num = Tabla_numerico[:, j]
+        col_M = Tabla_M[:, j]
         
         for i in range(1, num_filas):
             # Si hay un valor significativo en una variable artificial y el lado derecho no es cero
-            if (abs(col_num[i]) > 1e-10 or abs(col_M[i]) > 1e-10) and abs(tableau_numerico[i, -1]) > 1e-10:
+            if (abs(col_num[i]) > 1e-10 or abs(col_M[i]) > 1e-10) and abs(Tabla_numerico[i, -1]) > 1e-10:
                 return {
                     "pasos": pasos,
                     "metodo": "gran_m",
@@ -587,8 +587,8 @@ def metodo_gran_m(datos):
     valores_basicos = []
     
     for j in range(1, num_cols - 1):
-        col_num = tableau_numerico[:, j]
-        col_M = tableau_M[:, j]
+        col_num = Tabla_numerico[:, j]
+        col_M = Tabla_M[:, j]
         
         es_basica = False
         fila_uno = -1
@@ -609,7 +609,7 @@ def metodo_gran_m(datos):
         
         if es_basica:
             variables_basicas.append(j)
-            valores_basicos.append(tableau_numerico[fila_uno, -1])
+            valores_basicos.append(Tabla_numerico[fila_uno, -1])
         else:
             variables_basicas.append(j)
             valores_basicos.append(0)
@@ -617,13 +617,13 @@ def metodo_gran_m(datos):
     # Preparar el resultado final
     resultado = {
         "status_text": "Óptimo" if iteracion <= max_iteraciones else "Número máximo de iteraciones alcanzado",
-        "valor_objetivo": tableau_numerico[0, -1] if not es_minimizacion else -tableau_numerico[0, -1],
+        "valor_objetivo": Tabla_numerico[0, -1] if not es_minimizacion else -Tabla_numerico[0, -1],
         "variables": []
     }
     
     # Extraer los valores de las variables originales
     for j in range(num_vars):
-        idx = j + 1  # Índice en el tableau
+        idx = j + 1  # Índice en el Tabla
         valor = 0
         
         if idx in variables_basicas:
