@@ -34,10 +34,10 @@ html.transition *:after {
   --container-bg: var(--white);
   --text-color: var(--gunmetal);
   --heading-color: var(--gunmetal);
-  --form-bg: var(--light-gray);
-  --form-border: var(--light-gray);
-  --btn-bg: var(--gunmetal);
-  --btn-hover: var(--cool-gray);
+  --form-bg: #f8f9fa;
+  --form-border: #dfe0e1;
+  --btn-bg: #3f51b5;
+  --btn-hover: #303f9f;
   --input-text: var(--gunmetal);
   --input-bg: var(--white);
   --accent-color: var(--aureolin);
@@ -45,7 +45,7 @@ html.transition *:after {
   --table-header-text: var(--white);
   --table-row-odd: rgba(141, 153, 174, 0.1);
   --table-row-hover: rgba(248, 243, 43, 0.1);
-  --input-group-bg: var(--gunmetal);
+  --input-group-bg: #3f51b5;
   --input-group-text: var(--white);
   --shadow-color: rgba(0, 0, 0, 0.1);
 }
@@ -58,16 +58,16 @@ html.transition *:after {
   --heading-color: #f8f8f8;
   --form-bg: #2a2a2a;
   --form-border: #333333;
-  --btn-bg: var(--cool-gray);
-  --btn-hover: var(--gunmetal);
+  --btn-bg: #5c6bc0;
+  --btn-hover: #3f51b5;
   --input-text: #e1e1e1;
   --input-bg: #2a2a2a;
   --accent-color: var(--aureolin);
-  --table-header-bg: var(--cool-gray);
+  --table-header-bg: #5c6bc0;
   --table-header-text: var(--white);
   --table-row-odd: rgba(70, 70, 70, 0.5);
   --table-row-hover: rgba(248, 243, 43, 0.2);
-  --input-group-bg: var(--cool-gray);
+  --input-group-bg: #5c6bc0;
   --input-group-text: var(--white);
   --shadow-color: rgba(0, 0, 0, 0.3);
 }
@@ -129,6 +129,42 @@ h1:after {
 .form-select:focus, .form-control:focus {
   border-color: var(--cool-gray);
   box-shadow: 0 0 0 0.25rem rgba(141, 153, 174, 0.25);
+  outline: none;
+}
+
+/* Radio buttons and checkboxes styling */
+.form-check-input {
+  width: 1.25em;
+  height: 1.25em;
+  background-color: var(--input-bg);
+  border: 2px solid var(--cool-gray);
+}
+
+.form-check-input:checked {
+  background-color: var(--btn-bg);
+  border-color: var(--btn-bg);
+}
+
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.25rem rgba(141, 153, 174, 0.25);
+  border-color: var(--cool-gray);
+}
+
+.form-check-label {
+  color: var(--text-color);
+  padding-left: 0.25rem;
+}
+
+.text-muted {
+  color: var(--text-color) !important;
+  opacity: 0.7;
+}
+
+/* Override Bootstrap's text-white in card headers for better visibility */
+.card-header.bg-primary .text-white,
+.card-header.bg-primary .card-title {
+  color: white !important;
+  opacity: 1;
 }
 
 label {
@@ -176,6 +212,41 @@ label {
   border-radius: 8px;
   box-shadow: 0 4px 12px var(--shadow-color);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Card Styling */
+.card {
+  background-color: var(--container-bg);
+  border: 1px solid var(--form-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.card-header.bg-primary {
+  background-color: var(--btn-bg) !important;
+  border-bottom: 1px solid var(--form-border);
+  color: var(--white) !important;
+}
+
+.card-body {
+  background-color: var(--container-bg);
+  color: var(--text-color);
+}
+
+/* Make sure text in the card is visible in both themes */
+.form-check-inline .form-check-label {
+  color: var(--text-color);
+}
+
+/* Ensure small text is visible in both themes */
+.card-body .text-muted {
+  color: var(--text-color) !important;
+  opacity: 0.7;
+}
+
+/* Ensure better contrast for bootstrap primary background in both themes */
+.bg-primary {
+  background-color: var(--btn-bg) !important;
+  color: var(--white) !important;
 }
 
 .section {
@@ -250,9 +321,18 @@ label {
 .input-group-text {
   background-color: var(--input-group-bg);
   color: var(--input-group-text);
-  border: none;
+  border: 1px solid var(--form-border);
   font-weight: 500;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+/* Ensure input groups are visible in both themes */
+.input-group .form-control {
+  border-right: 0;
+}
+
+.input-group .input-group-text {
+  border-left: 0;
 }
 
 /* Responsive Adjustments */
